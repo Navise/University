@@ -1,0 +1,29 @@
+
+create table Publisher(Name varchar(25) primary key , phone_no int(10) , Address varchar(25));
+
+create table Book(Book_id int(3) primary key , title varchar(25) , pub_year int(4) , publisher_name varchar(25) , foreign key (publisher_name) references publisher(Name) on delete cascade);
+
+create table Book_authors(book_id int(3) , Author_name char(25) , primary key(book_id , Author_name) , foreign key (book_id) references book(book_id));
+
+create table library_branch(Branch_id int(3) , Address varchar(25) , Branch_name char(3) , primary key(branch_id));
+
+create table book_copies(book_id int(3) , branch_id int(3) , no_of_copies int(5) , primary key (book_id , branch_id) , foreign key (book_id) references book(book_id) , foreign key(branch_id)  references library_branch(branch_id) on delete cascade);
+
+create table book_lending(book_id int(3) , branch_id int(3) , card_no int(3) , date_out date , due_date date , primary key (book_id , branch_id , card_no ) , foreign key (book_id) references book(book_id) , foreign key(branch_id) references library_branch(branch_id));
+
+
+insert into publisher values ("penguin" , 999999999 , "Maharashtra") , ("goodreads" , 888888888 , "New Delhi") , ("pearson",777777777,"bengaluru");
+insert into book values (1 , "Destiny" ,2020 ,  "penguin" ) , (2 , "Deepwork" ,1980 , "goodreads") , (3 , "Grow rich" , 2000 ,"pearson");
+insert into book_authors values (1 , "medha" ) , (2 , "cal newport")  ,(3  , "robert");
+insert into library_branch values (10 , "cmrit" , "ise" ) , (11 , "cmru" , "cse") , (12 , "cmrit" , "ece");
+insert into book_copies values (1 , 10 , 100 ) , (2 , 11 , 200) , (3 , 12 , 400);
+insert into book_lending values (1 , 10 , 100 , "2020-01-01" , "2020-12-12") , (2 , 11 , 200 , "2020-01-01" , "2020-12-12") , (3 , 12 , 300 , "2020-01-01" , "2020-12-12") , (2 , 11 , 100 , "2020-01-01" , "2020-12-12") , (3 , 12 , 100 , "2020-01-01" , "2020-12-12") ;
+
+
+select b.book_id , b.title , b.publisher_name , a.author_name , c.no_of_copies , l.branch_id from book b , book_authors a , book_copies c, library_branch l where b.book_id = a.book_id and b.book_id = c.book_id and l.branch_id = c.branch_id;
+
+select card_no from book_lending where date_out between "2020-01-01" and "2020-12-12" group by card_no having count(*) > 2;
+
+create view vw_publication as select pub_year from book;
+
+create view no_books as select b.book_id , b.title , c.no_of_copies from book b , book_copies c , library_branch l where b.book_id = c.book_id and c.branch_id  = l.branch_id;

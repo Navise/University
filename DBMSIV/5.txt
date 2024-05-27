@@ -1,0 +1,33 @@
+create table department (dno varchar(25) primary key , dname varchar(25) , mgrstartdate date);
+
+create table employee (ssn varchar(25) primary key , fname varchar(25) , lname varchar(25) , address varchar(25) , sex char(1) , salary int(10) , superssn varchar(25) references employee(ssn) , dno varchar(25) references department (dno));
+alter table department add mgrssn varchar(25) references employee(ssn);
+
+create table dlocation (dloc varchar(25) , dno varchar(25) references department (dno) , primary key (dno , dloc));
+
+create table project (pno int(10) primary key , pname varchar(25) , plocation varchar(20) , dno varchar(25) references department (dno));
+
+create table works_on (hours int(3) , ssn varchar(25) references employee (ssn) , pno varchar(25) references project(pno) , primary key (ssn , pno));
+
+
+insert into employee (ssn , fname , lname , address , sex , salary ) values ('A1' , 'john' , 'scott' , 'bengaluru' , 'M' , 450000) , ('A2' , 'james' , 'smith' , 'bengaluru' , 'M', 700000) , ('A3' , 'edward' , 'scott' , 'bengaluru' , 'M' , 800000) , ('A4' , 'girish' , 'rao' , 'mysore' , 'M' , 600000), ('A5'  , 'neha' , 'sharma' , 'mangaluru' , 'F', 800000);
+
+insert into department values (1 , 'accounts' , '2020-01-01' , 'A1'), (2 , 'it' , '2020-01-01' , 'A2' ) ;
+
+ update employee set dno=1 where ssn = 'A1';
+ update employee set dno=2 where ssn= 'A2';
+
+insert into dlocation values ('bengaluru' , 1 ) , ('bengaluru' , 2 ), ('bengaluru' , 3 ) , ('bengaluru' , 4 ) , ('bengaluru' , 5 );
+
+insert into project values (100 , 'iot' , 'bengaluru' , 1) , (200 , 'ai' , 'bengaluru' , 2) , (300 , 'cloud' , 'bengaluru' , 1);
+
+insert into works_on values(5 , 'A1' , 100) , (5 , 'A2' , 200) , (5 ,'A3' , 300);
+
+
+(select distinct p.pno from project p , department d  , employee e where e.dno = d.dno and d.mgrssn = e.ssn and e.lname = 'scott') union (selectdistinct p1.pno from project p1 , works_on w , employee e1 where p1.pno = w.pno and e1.ssn = w.ssn and e1.lname = 'scott');
+
+select e.fname , e.lname , 1.1*e.salary as incr_sal from employee e , works_on w , project p where e.ssn = w.ssn and w.pno = p.pno and p.pname ='iot';
+
+select sum(e.salary) , max(e.salary) , min(e.salary) , avg(e.salary) from employee e , department d where e.dno = d.dno and d.dname = 'accounts';
+
+select d.dno , count(*) from department d , employee e where d.dno = e.dno and e.salary > 600000 and d.dno in (select e1.dno from employee e1 group by e1.dno having count(*) > 0) group by d.dno;

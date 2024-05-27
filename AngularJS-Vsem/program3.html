@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+
+    <script>
+        var app = angular.module("myApp", []);
+        app.controller("myCtrl" ,function($scope){
+
+            $scope.num1 = 0
+            $scope.num2 = 0
+            $scope.operator = "add";
+            $scope.result = 0
+
+            $scope.compute = function(){
+                switch($scope.operator){
+                    case "add":$scope.result = $scope.num1 + $scope.num2;break;
+                    case "sub":$scope.result = $scope.num1 - $scope.num2;break;
+                    case "mul":$scope.result = $scope.num1 * $scope.num2;break;
+                    case "div":if($scope.num2 == 0){
+                        alert("Cannot be divided by zero")
+                    }else{
+                        $scope.result = $scope.num1 / $scope.num2;
+                    }
+                    break;
+                    default:alert("Invalid Operation")
+                }
+            }
+
+        })
+    </script>
+</head>
+<body>
+    <div ng-controller="myCtrl">
+        <label>Enter Number 1: <input type="number" ng-model="num1"></label>
+        <label>Enter Number 2: <input type="number" ng-model="num2"></label>
+        <label>Select the Operator: <select ng-model="operator">
+            <option value="add">+</option>
+            <option value="sub">-</option>
+            <option value="mul">*</option>
+            <option value="div">/</option>
+        </select></label>
+        <button ng-click="compute()">Compute</button><br>
+        {{result}}
+    </div>
+</body>
+</html>

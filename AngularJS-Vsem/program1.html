@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directives</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <script>
+        var app = angular.module("myApp" ,[]);
+        app.controller("myCtrl" , function($scope){
+            $scope.firstName = "Navneeth";
+            $scope.lastName = "Ram vk"
+        })
+    </script>
+</head>
+<body ng-app="myApp">
+    <div ng-controller="myCtrl">
+        <label >Enter FirstName: <input type="text" ng-model="firstName"></label> <br>
+        <label>Enter LastName<input type="text"  ng-model="lastName"></label><br>
+        Your Full Name : {{firstName + " "+ lastName}}
+    </div>
+</body>
+</html>

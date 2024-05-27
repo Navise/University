@@ -1,0 +1,33 @@
+
+create table actor(act_id int(3) , act_name varchar(25) , act_gender char(1) , primary key (act_id));
+
+create table director(dir_id int(3) , dir_name varchar(25) , dir_phone int(10) , primary key (dir_id));
+
+create table movies(mov_id int(3) , mov_title varchar(25) , mov_year  int(4) , mov_lang varchar(25) , dir_id int(3) , primary key (mov_id) , foreign key (dir_id) references director(dir_id));
+
+create table movie_cast (act_id int(3) , mov_id int(3) , role varchar(25) , primary key (act_id , mov_id) , foreign key (act_id) references actor(act_id) , foreign key (mov_id) references movies(mov_id));
+
+create table rating (mov_id int(3) , rev_stars varchar(25) , primary key (mov_id) , foreign key (mov_id) references movies(mov_id));
+
+
+insert into actor values (1 , 'anushka' , 'F') , (2 , 'prabhas' , 'M') , (3 , 'punith', 'M') , (4 ,'jermy' , 'M');
+
+insert into director values (10 , 'rajamouli' , 999999999) , (20 , 'hitchcock' ,888888888) , (30 ,'steven spielberg' , 777777777);
+
+insert into movies values (100 , 'bahubali-2' , '2017' , 'telagu' , 10) , (200 , 'bahubali-1' , '2019' , 'telagu' , 10) , (300 , 'akash' , '2015' , 'kannada' , 20) , (400 , 'war horse' , '2000' ,'english', 30);
+
+insert into movie_cast values (1 , 100 , 'heroine' ) , (2 , 100 ,'hero') , (3 , 300 , 'hero') , (4 , 400 , 'hero');
+
+insert into rating values (100 , 4 ) , (200 , 3) , (300 , 5) , (400 , 4);
+
+
+select mov_title from movies where dir_id in (select dir_id from director where dir_name = "hitchcock");
+
+select mov_title from movies m , movie_cast mv where m.mov_id = mv.mov_id and act_id in (select act_id from movie_cast group by act_id having count(act_id)> 0) group by mov_title having count(*) > 1;
+
+select act_name , mov_title , mov_year from actor a join movie_cast c on a.act_id = c.act_id join movies m on c.mov_id = m.mov_id where m.mov_year not between 2000 and 2015;
+
+select mov_title , max(rev_stars) from movies inner join rating using(mov_id) group by mov_title having max(rev_stars) > 0 order by mov_title;
+
+update rating set rev_stars =5 where mov_id in (select mov_id from movies where dir_id in (select dir_id from director where dir_name = 'steven spielberg'));
+select * from rating;

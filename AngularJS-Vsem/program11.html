@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Student Details</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+        <script>
+            var app = angular.module("myApp" , []);
+            app.controller("myCtrl" , function($scope){
+                $scope.studentDetails = ['navneeth' ,'harish' , 'kumar' , 'kevin' , 'Farhan']
+
+                $scope.upper=true
+                $scope.lower=false
+
+                $scope.Lower=function()
+                {
+                    $scope.upper=false
+                    $scope.lower=true 
+                }
+
+                $scope.Upper=function()
+                {
+                    $scope.upper=true
+                    $scope.lower=false
+                }
+            })
+        </script>
+    </head>
+
+    <body ng-app="myApp" ng-controller="myCtrl">
+        <h1>Student Details in UPPER CASE</h1>
+        <div>
+            <button ng-click="Upper()">UPPER</button>
+            <button ng-click="Lower()">lower</button>
+
+            <table border="1">
+                <tr>
+                    <th>Sl no</th>
+                    <th>Name</th>
+                </tr>
+
+                <tr ng-repeat="student in studentDetails">
+                    <td>{{$index + 1}}</td>
+                    <td ng-show="upper">{{student | uppercase }}</td>
+                    <td ng-show="lower">{{student | lowercase }}</td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>

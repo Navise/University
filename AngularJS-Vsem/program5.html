@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <title>Student Details </title>
+    <script>
+        var app = angular.module("myApp", []);
+        app.controller("myCtrl", function($scope){
+            $scope.Generate = function(){
+                $scope.obj = [];
+
+                for(let i=1; i<=$scope.num; i++){
+                    $scope.obj.push({
+                        "name" : "student"+i,
+                        "cgpa":Math.floor(Math.random() * 7) + 3
+                    })
+                }
+            }
+        })
+    </script>
+</head>
+<body>
+    <div ng-controller="myCtrl">
+        <h1>Student Details Application</h1>
+        <label>Enter the Number of Students: <input type="number" ng-model="num">
+            <button ng-click="Generate()">Generate</button></label>
+        <p>Number of students {{obj.length}}</p>
+        <table border="1px dashed" ng-show="obj.length > 0">
+            <tr>
+                <td>Sl no</td>
+                <td>Name</td>
+                <td>CGPA</td>
+            </tr>
+            <tr ng-repeat="x in obj">
+                <td>{{$index+1}}</td>
+                <td>{{x.name}}</td>
+                <td>{{x.cgpa}}</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

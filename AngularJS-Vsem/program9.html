@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Employee Search Application</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+        <script>
+            var app = angular.module("myApp" , []);
+            app.controller("myCtrl" , function($scope){
+                $scope.emplist = [
+                    {'name':'harish kumar' , 'salary': 500000},
+                    {'name':'Chetan','salary':400000},
+                    {'name':'Manju','salary':300000},
+                    {'name':'Prashanth','salary':400000},
+                    {'name':'Thanuja','salary':500000},
+                    {'name':'Manasa','salary':600000}
+                ]
+
+                $scope.clearFilters = function(){
+                    $scope.searchName=''
+                    $scope.searchSalary=''
+                }
+            })
+        </script>
+    </head>
+
+    <body ng-app="myApp" ng-controller="myCtrl">
+        <h1>Employee Search Application</h1>
+
+        <div>
+            Search Employee by Name: <input type="text" ng-model="searchName">
+            Search Employee by Salary: <input type="text" ng-model="searchSalary">
+
+            <button ng-click="clearFilters()">Clear Filters</button><br>
+
+            <h3>List of Employees</h3>
+
+            <table border="1">
+                <tr>
+                    <th>Sl no</th>
+                    <th>Emp Name</th>
+                    <th>Salary</th>
+                </tr>
+
+                <tr ng-repeat="emp in emplist | filter:{name:searchName , salary:searchSalary}">
+                    <td>{{$index + 1}}</td>
+                    <td>{{emp.name}}</td>
+                    <td>{{emp.salary}}</td>
+                </tr>
+            </table>
+
+        </div>
+
+    </body>
+</html>

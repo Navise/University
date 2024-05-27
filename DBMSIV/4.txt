@@ -1,0 +1,33 @@
+ create table student (usn varchar(10) primary key , sname varchar(25) , address varchar(25) , phone int(10) , gender char(1));
+
+ create table semsec (ssid varchar(10) primary key , sem int(3) , sec char(1));
+
+create table class (usn varchar(10) , ssid varchar(10) , primary key (usn , ssid) , foreign key (usn) references student(usn) , foreign key (ssid) references semsec (ssid));
+
+ create table subject(subcode varchar(10) , title varchar(25) , sem int(3) , credits int(2) , primary key (subcode));
+
+ create table iamarks(usn varchar(10) , subcode varchar(10) ,ssid varchar(10) , test1 int(2) , test2 int(2) , test3 int(2) , finalia int(3) , primary key (usn , subcode , ssid) , foreign key (usn) references student(usn) , foreign key (subcode) references subject(subcode) , foreign key (ssid) references semsec (ssid));
+
+
+
+ insert into student values('1cr21is103' , 'navneethramvk' , 'bengaluru',93535799 , 'M') , ('1cr21is094' , 'mithun' , 'hoskote',94849384 , 'M') ,('1cr21is100' , 'teesha' , 'mangaluru' , 898989898 , 'F') , ('1cr21is101' , 'rashmi' , 'goa' , 7878998, 'F') , ('1cr21is200' , 'jeeva' ,'tumkur', 76859788,'M');
+
+insert into semsec values ('ISE8A' , 8 , 'A') , ('ISE8B' , 8 , 'B' ) ,('ISE4C' , 4 , 'C' ) , ('ISE5A' , 5 , 'A');
+
+insert into class values ("1cr21is100" , 'ISE8A') , ('1cr21is200' , 'ISE8B' ) , ("1cr21is103" , 'ISE4C' ) , ('1cr21is094' ,'ISE5A') , ('1cr21is101' , 'ISE4C');
+
+ insert into subject values ('10CS81' , 'ACA' , 8 , 4) ,('10CS82' , 'ATC' , 8 , 4) , ('10CS53' , 'DBMS' , 5 , 4) , ('10CS41' , 'DAA' , 4 ,4 );
+
+insert into iamarks (usn , subcode , ssid , test1 , test2 , test3) values ('1cr21is100' , '10CS81','ISE8A' , 15, 16 , 18) , ('1cr21is200' , '10CS82' ,'ISE8B' , 14 , 16 , 19) , ('1cr21is103' , '10CS41' ,'ISE4C', 19 , 20 , 17) , ('1cr21is094' , '10CS53' ,'ISE5A', 18 , 19 , 20) , ('1cr21is101' , '10CS41' , 'ISE4C',15 , 16 , 17);
+
+
+select s.* , ss.sem , ss.sec from student s , semsec ss , class c where s.usn = c.usn and ss.ssid = c.ssid and ss.sem =4 and ss.sec = 'C';
+
+select ss.sem , ss.sec , s.gender , count(s.gender) as count from student s , semsec ss , class c where s.usn = c.usn and ss.ssid = c.ssid group by ss.sem , ss.sec , s.gender order by sem;
+
+ create view vw_marks as select test1 , subcode from iamarks where usn='1cr21is103';
+select * from vw_marks;
+
+ update iamarks set finalia = (test1 + test2 + test3 - least(test1 , test2 , test3))/2;
+
+select s.usn , s.sname , s.address , s.phone , s.gender, (case when ia.finalia between 18 and 20 then 'outstanding' when ia.finalia between 12 and 17 then 'average' else 'weak' end ) as cat from student s , semsec ss , iamarks ia , subject sub where s.usn = ia.usn and ss.ssid = ia.ssid and sub.subcode = ia.subcode and sub.sem = 8;  

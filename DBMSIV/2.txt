@@ -1,0 +1,23 @@
+create table salesman(salesman_id int(3) , name varchar(25) , city varchar(25) , commission varchar(25) , primary key(salesman_id));
+
+create table customer(customer_id int(3) , customer_name varchar(25) , city varchar(25) , grade int(3) , primary key (customer_id) , salesman_id int(3) references salesman(salesman_id) on delete set null);
+
+create table orders (ord_no int(3) , purchase int(10) , ord_date date , primary key (ord_no) , customer_id int(3) references customer(customer_id) on delete cascade , salesman_id int(3) references salesman(salesman_id) on delete cascade);
+
+
+insert into salesman values (1 , "john" , "bengaluru" , "25%"), (2 , "ravi" , "bengaluru" , "10%") , (3 , "Kumar" , "Mysore" , "15%" ) ,(4 ,"smith" , "goa" , "30%");
+
+insert into customer values (10 , "preethi" , "bengaluru" , 8 , 1) , (11 , "ranjitha" , "bengaluru" , 7 , 1) , (12 , "bhavana" , "bengalrur" , 10 , 2 ) , (13 , "shreya" , "goa" , 8 , 3);
+
+ insert into  orders values(100 , 10000 , '2020-01-01' , 10 , 1) , (200 , 20000 , '2020-01-01' , 11 , 1) , (300 , 30000 , '2020-01-01' , 12 , 2);
+
+
+select grade , count(Distinct customer_id ) from customer group by grade having grade > (select avg(grade) from customer where city="bengaluru");
+
+ select salesman_id , name from salesman s where 1 < (select count(*) from customer where salesman_id = s.salesman_id);
+
+select s.salesman_id , s.name , c.customer_name , s.commission from salesman s , customer c where s.city = c.city union select salesman_id , name , 'no match' , commission from salesman where not city = any (select city from customer) order by 2 desc;
+
+create view vw_sales as select b.ord_date , a.salesman_id , a.name from salesman a , orders b where a.salesman_id = b.salesman_id and b.purchase = (select max(purchase) from orders c where c.ord_date = b.ord_date);
+
+ delete from salesman where salesman_id = 4;

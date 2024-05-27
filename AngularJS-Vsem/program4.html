@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <title>Factorial and Square</title>
+    <script>
+        var app = angular.module("myApp", []);
+        app.controller("myCtrl" , ($scope) => {
+            $scope.number = 0;
+            $scope.result = 0;
+            $scope.square = function(){
+                $scope.result = $scope.number * $scope.number;
+            }
+            $scope.factorial = function(){
+                let res = 1;
+                while($scope.number > 0){
+                    res *= $scope.number;
+                    $scope.number--;
+                }
+                $scope.result = res;
+            }
+        })
+    </script>
+</head>
+<body>
+    <div ng-controller="myCtrl">
+        <label>Enter the Number: <input type="number" ng-model="number"></label>
+        <button ng-click="square()">Square</button>
+        <button ng-click="factorial()">Factorial</button>
+        {{result}}
+    </div>
+</body>
+</html>

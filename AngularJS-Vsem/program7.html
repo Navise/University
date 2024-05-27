@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD application</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <script>
+        var app = angular.module("myApp" , []);
+        app.controller("myCtrl" , function($scope){
+            $scope.users = [
+                {"name" : "navneethramvk" , "email":"navk21is@cmrit.ac.in" , "editing":false},
+                {"name":"ekalavya" , "email":"ekkp21ec@cmrit.ac.in" , "editing":false}
+            ]
+
+            $scope.createUser = function(){
+                if($scope.newUser && $scope.newMail){
+                    var u = {
+                        "name" :$scope.newUser , "email":$scope.newMail , "editing":false
+                    }
+                    $scope.users.push(u);
+                    $scope.newUser = "";
+                    $scope.newMail = "";
+                }else{
+                    alert("Provide username and email!! ")
+                }
+            }
+
+            $scope.readUser = function(user){
+                user.editing = true;
+            }
+
+            $scope.updateUser = function(user){
+                user.editing = false;
+            }
+
+            $scope.deleteUser = function(user){
+                var yes = confirm ("Are you sure you want to delete: ");
+
+                if(yes){
+                    var index = $scope.users.indexOf(user);
+                    $scope.users.splice(index , 1);
+                }
+            }
+
+        })
+    </script>
+</head>
+<body ng-app="myApp">
+
+    <h1>User Management application</h1>
+    <div ng-controller="myCtrl">
+        <label>Enter User Name: <input type="text" ng-model="newUser"></label>
+        <label>Enter User Email: <input type="text" ng-model="newMail"></label>
+        
+        <button ng-click="createUser()">Create</button>
+
+        <table border="1">
+            <tr>
+                <th>Sl no</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Read</th>
+                <th>Update</th>
+                <th>Delete</th>
+            </tr>
+
+            <tr ng-repeat="user in users">
+                <td>{{$index +1}}</td>
+                <td>
+                    <span ng-show="!user.editing">{{user.name}}</span>
+                    <input type="text" ng-show="user.editing" ng-model="user.name">
+                </td>
+                <td>
+                    <span ng-show="!user.editing">{{user.email}}</span>
+                    <input type="text" ng-show="user.editing" ng-model="user.email">
+                </td>
+                <td>
+                    <button ng-click="readUser(user)">Read</button>
+                </td>
+                <td>
+                    <button ng-click="updateUser(user)">Update</button>
+                </td>
+                <td>
+                    <button ng-click="deleteUser(user)">Delete</button>
+                </td>
+            </tr>
+        </table>
+
+    </div>    
+</body>
+</html>
