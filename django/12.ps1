@@ -26,49 +26,52 @@ python manage.py startapp studentRegistration
 @"
 from django.db import models
 
-class Student(models.Model):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    email = models.EmailField()
+class Course(models.Model):
+    course_code = models.CharField(max_length=40)
+    course_name = models.CharField(max_length=100)
+    course_credits = models.IntegerField()
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
-"@ | Set-content .\studentRegistration\models.py 
+        return self.course_name
 
-@"
-from django import forms
-from .models import Student
+class Student(models.Model):
+    student_usn = models.CharField(max_length=20)
+    student_name = models.CharField(max_length=100)
+    student_sem = models.IntegerField()
+    enrolment = models.ManyToManyField(Course)
 
-class StudentForm(forms.ModelForm):
-    class Meta:
-        model = Student
-        fields = ['first_name', 'last_name', 'email']
-"@ | Set-Content .\studentRegistration\forms.py
+    def __str__(self):
+        return f"{self.student_name} ({self.student_usn})"
+"@ | Set-Content .\studentRegistration\models.py 
 
 @"
 from django.shortcuts import render
 from django.http import JsonResponse
-from .forms import StudentForm
+from .models import Course, Student
 
-def register_student(request):
-    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        form = StudentForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return JsonResponse({'message': 'Student registered successfully!'}, status=200)
-        else:
-            return JsonResponse({'errors': form.errors}, status=400)
+def regaj(request):
+    if request.method == "POST" and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        sid = request.POST.get("sname")
+        cid = request.POST.get("cname")
+        student = Student.objects.get(id=sid)
+        course = Course.objects.get(id=cid)
+        res = student.enrolment.filter(id=cid)
+        if res:
+            return JsonResponse({'message': 'Student already enrolled'}, status=200)
+        student.enrolment.add(course)
+        return JsonResponse({'message': 'Student enrolled successfully'}, status=200)
     else:
-        form = StudentForm()
-    return render(request, 'register_student.html', {'form': form})
+        students = Student.objects.all()
+        courses = Course.objects.all()
+        return render(request, "regaj.html", {"students": students, "courses": courses})
 "@ | Set-Content .\studentRegistration\views.py 
 
 @"
 from django.urls import path
-from .views import register_student
+from .views import regaj
 
 urlpatterns = [
-    path('', register_student, name='register_student'),
+    path('regaj/', regaj, name='regaj'),
 ]
 "@ | Set-Content .\studentRegistration\urls.py 
 
@@ -217,37 +220,47 @@ mkdir .\studentRegistration\templates
 <html>
 <head>
     <title>Student Registration</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
     <h1>Student Registration</h1>
     <form id="student-form">
-        `{% csrf_token %}
-        `{{ form.as_p }}
-        <button type="submit">Register</button>
+        {% csrf_token %}
+        Student Name
+        <select name="sname" id="sname">
+            {% for student in students %}
+                <option value="{{ student.id }}">{{ student.student_name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        Course Name
+        <select name="cname" id="cname">
+            {% for course in courses %}
+                <option value="{{ course.id }}">{{ course.course_name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <span id="ans"></span>
+        <button type="button" id="ebtn">Enroll</button>
     </form>
-    <div id="message"></div>
-
     <script>
         `$(document).ready(function(){
-            `$('#student-form').on('submit', function(event){
-                event.preventDefault();
-                `$.ajax({
-                    url: "`{% url 'register_student' %}`",
-                    method: 'POST',
-                    data: `$(this).serialize(),
+            `$("#ebtn").click(function(){
+                var sname = `$("#sname").val();
+                var cname = `$("#cname").val();
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'regaj' %}",
+                    data: {
+                        sname: sname,
+                        cname: cname,
+                        csrfmiddlewaretoken: "{{ csrf_token }}"
+                    },
                     success: function(response){
-                        `$('#message').html('<p style="color:green;">' + response.message + '</p>');
-                        `$('#student-form')[0].reset();
+                        `$("#ans").html(response.message);
                     },
                     error: function(xhr){
-                        let errors = JSON.parse(xhr.responseText).errors;
-                        let error_message = '<ul style="color:red;">';
-                        for (let field in errors) {
-                            error_message += '<li>' + errors[field].join(', ') + '</li>';
-                        }
-                        error_message += '</ul>';
-                        `$('#message').html(error_message);
+                        `$("#ans").html('An error occurred.');
                     }
                 });
             });
@@ -255,10 +268,38 @@ mkdir .\studentRegistration\templates
     </script>
 </body>
 </html>
-"@ | Set-Content .\studentRegistration\templates\register_student.html
-
+"@ | Set-Content .\studentRegistration\templates\regaj.html
 python manage.py makemigrations
 
-python manage.py migrate 
+python manage.py migrate
+@"
+import os
+import django
 
-python manage.py runserver 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'AjaxRegistration.settings')
+django.setup()
+
+from studentRegistration.models import Course, Student
+
+from studentRegistration.models import Course, Student
+
+course1 = Course(course_code='CS101', course_name='Introduction to Computer Science', course_credits=3)
+course1.save()
+course2 = Course(course_code='CS102', course_name='Data Structures', course_credits=4)
+course2.save()
+course3 = Course(course_code='CS103', course_name='Algorithms', course_credits=4)
+course3.save()
+
+student1 = Student(student_usn='1', student_name='John Doe', student_sem=3)
+student1.save()
+student2 = Student(student_usn='2', student_name='Jane Smith', student_sem=5)
+student2.save()
+
+"@ | Set-Content .\insert.py
+
+python .\insert.py
+
+rm insert.py 
+
+
+python manage.py runserver
