@@ -1,206 +1,146 @@
 <# 10
-For students enrolment developed in Module 2, create a generic class view which
-displays list of students and detail view that displays student details for any selected
-student in the list
+For students enrolment developed in Module 2, create a generic class view which displays 
+list of students and detailview that displays student details for any selected student in the list.
 #>
 
-mkdir fourth
+mkdir tenth 
 
-Set-Location fourth
+Set-Location .\tenth 
 
-python -m venv env
+python -m venv env 
 
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 .\env\Scripts\activate
 
-pip install django
+pip install django 
 
 Set-Location .\env
 
-django-admin startproject four
+django-admin startproject ten 
 
-Set-Location .\four
+Set-Location .\ten 
 
-python manage.py startapp courses
-
-mkdir .\courses\templates
+python manage.py startapp studentRegistration
 
 @"
-<html>
-<head>
-    <title>Student Registration</title>
-</head>
-<body>
-    <h1>Student Registration</h1>
-    <form method="post">
-        {% csrf_token %}
-        <label for="student_name">Student Name:</label>
-        <input type="text" id="student_name" name="student_name">
-        <label for="course">Select a Course:</label>
-        <select id="course" name="course">
-            {% for course in courses %}
-                <option value="{{ course.id }}">{{ course.name }}</option>
-            {% endfor %}
-        </select>
+from django.db import models
+class Course(models.Model):
+    name = models.CharField(max_length=100)
+    def __str__(self):
+        return self.name
 
-        <label for="project">Select a Project:</label>
-        <select id="project" name="project">
-            {% for project in projects %}
-                <option value="{{ project.id }}"> {{ project.topic}}</option>
-            {% endfor %}
-        </select><br><br>
-
-        <button type="submit">Register</button>
-    </form>
-</body>
-</html>
-
-"@ | Set-Content .\courses\templates\register_student.html
+class Student(models.Model):
+    name = models.CharField(max_length=100)
+    courses = models.ManyToManyField(Course, related_name='students')
+    def __str__(self):
+        return self.name
+"@ | Set-Content .\studentRegistration\models.py 
 
 @"
-<html>
-<head>
-    <title>Course List</title>
-</head>
-<body>
-    <h1>Available Courses</h1>
-    <ul>
-        {% for course in courses %}
-            <li><a href="{% url 'course_details' course.id %}">{{ course.name }}</a></li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
-"@ | Set-Content .\courses\templates\course_list.html
+from django.contrib import admin
+from django.urls import path, include
+urlpatterns = [
+path('admin/', admin.site.urls),
+path('', include('studentRegistration.urls')),
+]
+"@ | Set-Content .\ten\urls.py 
 
 @"
-<html>
-<head>
-    <title>{{ course.name }} Details</title>
-</head>
-<body>
-    <h1>{{ course.name }} Details</h1>
-    <h2>Registered Students:</h2>
-    <ul>
-        {% for student in students %}
-            <li>{{ student.name }}</li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
-"@ | Set-Content .\courses\templates\course_details.html 
+from django.urls import path
+from . import views
+urlpatterns = [
+path('students/', views.StudentListView.as_view(), name='student_list'),
+path('student/<int:pk>/', views.StudentDetailView.as_view(), 
+name='student_detail'),
+]
+"@ | Set-Content .\studentRegistration\urls.py 
 
 @"
-from django.shortcuts import render , redirect , get_object_or_404
-from .models import Course, Student , Project
-from .forms import ProjectForm
-from django.views.generic import ListView , DetailView
-
-def register_student(request):
-    if request.method == 'POST':
-        student_name = request.POST.get('student_name')
-        course_id = request.POST.get('course')
-        project_id = request.POST.get('project') 
-        course = Course.objects.get(pk=course_id)
-        project = Project.objects.get(pk=project_id) 
-        student = Student.objects.create(name=student_name)
-        student.courses.add(course)
-        student.project.add(project)  
-    courses = Course.objects.all()
-    projects = Project.objects.all()
-    return render(request, 'register_student.html', {'courses': courses, 'projects': projects})
-
-def course_details(request, course_id):
-    course = Course.objects.get(pk=course_id)
-    students = course.students.all()
-    return render(request, 'course_details.html', {'course': course, 'students': students})
-
-def course_list(request):
-    courses = Course.objects.all()
-    return render(request, 'course_list.html', {'courses': courses})
-
-#
-def register_project(request):
-    if request.method == 'POST':
-        form = ProjectForm(request.POST)
-        if form.is_valid():
-            project = form.save()
-            return redirect('index')
-    else:
-        form = ProjectForm()
-    return render(request, 'register_project.html', {'form': form})
-
-def index(request):
-    courses = Course.objects.all()
-    projects = Project.objects.all()
-    students = Student.objects.all()
-    return render(request, 'index.html', {
-    'courses': courses,
-    'projects': projects,
-    'students':students
-    })
-
-
-def project_student_list(request , project_id):
-    project = Project.objects.get(pk = project_id)
-    students = project.students.all() 
-    return render(request , 'student_list.html ', {'students':students , 'project':project})   
-
-def project_detail(request ,project_id):
-    project = get_object_or_404(Project , pk=project_id)
-    return render(request , 'project_details.html', {'project': project})
-
+from django.views.generic import ListView, DetailView
+from .models import Student
 class StudentListView(ListView):
     model = Student
-    template_name = 'stu_list.html'
+    template_name = 'student_list.html'
     context_object_name = 'students'
 class StudentDetailView(DetailView):
     model = Student
     template_name = 'student_detail.html'
     context_object_name = 'student'
+"@ | Set-Content .\studentRegistration\views.py 
 
-"@ | Set-Content .\courses\views.py
-
-@"
-from django.urls import path
-from . import views
-
-urlpatterns = [
-    path('index/',views.index , name='index'),
-    path('register/', views.register_student, name='register_student'),
-    path('course/<int:course_id>/', views.course_details, name='course_details'),
-    path('list/', views.course_list, name='course_list'),
-    path('project_register/', views.register_project , name='register_project'),
-    path('project_student_list/<int:project_id>', views.project_student_list, name='project_student_list'),
-    path('project_details/<int:project_id>' , views.project_detail , name="project_detail"),
-    path('students/', views.StudentListView.as_view(), name="student_list_all"),
-    path('students/<int:pk>/',views.StudentDetailView.as_view(), name='student_details')
-]
-
-"@ | Set-Content .\courses\urls.py
+mkdir .\studentRegistration\templates 
 
 @"
-from django.contrib import admin
-from django.urls import path, include
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('courses/', include('courses.urls')),
-]
-"@ | Set-Content .\four\urls.py
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ student.name }} Details</title>
+</head>
+<body>
+<h1>{{ student.name }} Details</h1>
+<h2>Courses enrolled:</h2>
+<ul>
+{% for course in student.courses.all %}
+<li>{{ course.name }}</li>
+{% endfor %}
+</ul>
+</body>
+</html>
+"@ | Set-Content .\studentRegistration\templates\student_detail.html 
 
 @"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student List</title>
+</head>
+<body>
+<h1>List of Students</h1>
+<ul>
+{% for student in students %}
+<li><a href="{% url 'student_detail' student.pk %}">
+{{ student.name }}</a></li>
+{% endfor %}
+</ul>
+</body>
+</html>
+"@ | Set-Content .\studentRegistration\templates\student_list.html 
+
+
+@"
+"""
+Django settings for ten project.
+
+Generated by 'django-admin startproject' using Django 5.0.7.
+
+For more information on this file, see
+https://docs.djangoproject.com/en/5.0/topics/settings/
+
+For the full list of settings and their values, see
+https://docs.djangoproject.com/en/5.0/ref/settings/
+"""
 
 from pathlib import Path
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'django-insecure-v@5)d#7zj$$b6wumnq6hj*9@fgzk(tpfmkonj87hy3at2#i=+%'
+
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
 
-SECRET_KEY = 'django-insecure-0q@d-g^#yki_ee983ylev&v6@7#y)!^hzd7#rk2&3&f&0&rk60'
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -210,7 +150,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'courses'
+    'studentRegistration'
 ]
 
 MIDDLEWARE = [
@@ -223,7 +163,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'four.urls'
+ROOT_URLCONF = 'ten.urls'
 
 TEMPLATES = [
     {
@@ -241,7 +181,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'four.wsgi.application'
+WSGI_APPLICATION = 'ten.wsgi.application'
 
 
 # Database
@@ -296,196 +236,42 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-"@ | Set-Content .\four\settings.py
+"@ | Set-Content .\ten\settings.py 
+
+python manage.py makemigrations 
+
+python manage.py migrate 
 
 @"
-from django.db import models
-
-class Course(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-class Student(models.Model):
-    name = models.CharField(max_length=100)
-    courses = models.ManyToManyField(Course, related_name='students')
-    project = models.ManyToManyField('Project' , related_name='students', blank=True)
-
-    def __str__(self):
-        return self.name
-    
-class Project(models.Model):
-    topic = models.CharField(max_length= 100 , default='')
-    languages_used = models.CharField(max_length=100 , default='')
-    duration = models.IntegerField(default=0)
-
-    def __str__(self):
-        return self.topic
-
-"@ | Set-Content .\courses\models.py
-
-@"
-<h1>Projects</h1>
-<ul >
-{% for project in projects %}
-<li >
-<a href="{% url 'project_student_list' project.id %}">{{ project.topic }}</a>
-</li>
-{% endfor %}
-</ul>
-
-<h1 >Students</h1>
-<ul >
-{% for student in students %}
-<li >
-{{ student.name }}
-</li>
-{% endfor %}
-
-"@ | Set-Content .\courses\templates\index.html
-
-@"
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Project Details</title>
-</head>
-<body>
-    <h1>Project Details</h1>
-    <h2>Title: {{ project.topic }}</h2>
-    <p>Languages Used:  {{ project.languages_used}}</p>
-    <p>Duration:  {{ project.duration }}</p>
-    
-    <h3>Students:</h3>
-    <ul>
-        {% for student in project.students.all %}
-            <li>{{ student.name }}</li>
-        {% empty %}
-            <li>No students assigned</li>
-        {% endfor %}
-    </ul>
-
-</body>
-</html>
-
-"@ | Set-Content .\courses\templates\project_details.html
-
-@"
-
-<div >
-<h1>Create Project</h1>
-<form method="post">
-{% csrf_token %}
-<div class="form-group">
-<label for="id_topic">Topic:</label>
-{{ form.topic }}
-</div>
-<div class="form-group">
-<label for="id_languages_used">Languages Used:</label>
-{{ form.languages_used }}
-</div>
-<div class="form-group">
-<label for="id_duration">Duration:</label>
-{{ form.duration }}
-</div>
-<button type="submit" >Submit</button>
-</form>
-</div>
-
-"@ | Set-Content .\courses\templates\register_project.html
-
-@"
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Student List</title>
-</head>
-<body>
-    <h1>Project: {{ project.topic }}</h1>
-    <h2>Students:</h2>
-    <ul>
-        {% for student in students %}
-            <li>{{ student.name}}</li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
-"@ | Set-Content .\courses\templates\student_list.html
-
-@"
-from django import forms
-from .models import Project
-
-class ProjectForm(forms.ModelForm):
-    class Meta:
-        model = Project
-        fields = ('topic', 'languages_used', 'duration')
-        widgets = {
-    'topic': forms.TextInput(attrs={'class': 'form-control'}),
-    'languages_used': forms.TextInput(attrs={'class': 'form-control'}),
-'duration': forms.TextInput(attrs={'class': 'form-control'}),
-    }
-"@ | Set-Content .\courses\forms.py
-
-@"
-<h1>Students</h1>
-<ul>
-{% for student in students %}
-<li>
-{{ student.name }}
-</li>
-{% endfor %}
-</ul>
-"@  | Set-Content .\courses\templates\stu_list.html
-
-@"
-<div >
-    <h1> Name of Student : {{ student.name }}</h1>
-</div>
-"@ | Set-Content .\courses\templates\student_detail.html
-
-python manage.py makemigrations
-
-python manage.py migrate
-
-$env:DJANGO_SETTINGS_MODULE = "four.settings"
-
-@"
-
+import os
 import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ten.settings')
 django.setup()
-from courses.models import Course
 
-Course.objects.create(name='Mathematics')
-Course.objects.create(name='Physics')
+from studentRegistration.models import Course, Student
 
-"@ | Set-Content .\create_course.py 
 
-python .\create_course.py
+course1 = Course.objects.create(name='Mathematics')
+course2 = Course.objects.create(name='Physics')
 
-@"
-from django.contrib import admin
+course1.save() 
+course2.save() 
 
-from .models import Course  ,Student 
+student1 = Student.objects.create(name='Alicent')
+student1.courses.add(course1)
+student2 = Student.objects.create(name='John')
+student2.courses.add(course2) 
 
-@admin.register(Course)
-class CourseAdmin(admin.ModelAdmin):
-    list_display = ('name',)
 
-@admin.register(Student)
-class StudentAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-    filter_horizontal = ('courses',)
-"@ | Set-Content .\courses\admin.py
+student1.save()
+student2.save()
 
-$env:DJANGO_SUPERUSER_PASSWORD = "navise"
-python manage.py createsuperuser --username navise --email "navk21is@cmrit.ac.in" --noinput
+"@ | Set-Content .\insert.py 
 
-python manage.py makemigrations
+python .\insert.py 
 
-python manage.py migrate
+rm insert.py 
 
-python manage.py runserver
+python manage.py runserver 
+
