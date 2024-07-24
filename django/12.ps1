@@ -299,7 +299,7 @@ student2.save()
 
 python .\insert.py
 
-rm insert.py 
+Remove-Item insert.py 
 
 
 python manage.py runserver
