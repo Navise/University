@@ -6,7 +6,7 @@ This repository contains a collection of all the lab programs for each semester,
 
 ## Django Script Execution
 
-To execute the PowerShell scripts for Django tasks, follow these steps:
+To execute the PowerShell scripts for Django Lab, follow these steps:
 The script is  according to lab program number with .ps1
 
 ### Option 1: Download Locally
