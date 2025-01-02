@@ -24,11 +24,11 @@ The script is  according to lab program number with .ps1
 
    - Using `irm` (Invoke-RestMethod):
      ```powershell
-     irm https://raw.githubusercontent.com/navise/university/main/django/13.ps1 | iex
+     irm https://raw.githubusercontent.com/navise/university/main/django/1.ps1 | iex
      ```
 
      or :
      ```powershell
-     Invoke-RestMethod https://raw.githubusercontent.com/navise/university/main/django/13.ps1 | Invoke-Expression
+     Invoke-RestMethod https://raw.githubusercontent.com/navise/university/main/django/1.ps1 | Invoke-Expression
      ```
-  wait for some time and this will run the 13th lab program of django. 
+  wait for some time and this will run the 1st lab program of django.
