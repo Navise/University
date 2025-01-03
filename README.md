@@ -31,4 +31,4 @@ The script is  according to lab program number with .ps1
      ```powershell
      Invoke-RestMethod https://raw.githubusercontent.com/navise/university/main/django/1.ps1 | Invoke-Expression
      ```
-  wait for some time and this will run the 1st lab program of django.
+  This will run the 1st lab program of django.
